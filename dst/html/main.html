@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tree View Editor</title>
+    <script src="../js/tree.js"></script>
+    <script src="../js/viewer.js"></script>
+    <link rel="stylesheet" href="../css/pane.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/tree.css" />
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="pane-left">
+    <div id="toolbar">
+      <div>File</div>
+      <button id="save">Save</button>
+      <div>Eidt</div>
+      <button id="delete">Delete</button>
+      <button id="add">Add</button>
+    </div>
+    <div id="main">
+      <table id="tree_table">
+        <thead id="tree_table_head"></thead>
+        <tbody id="tree_table_body"></tbody>
+      </table>
+    </div>
+  </body>
+</html>

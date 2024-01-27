@@ -1,0 +1,9 @@
+{
+    "launch": "http://localhost:{port}/ooo_tree/html/main.html?id={id}",
+    "static_files": [
+        {
+            "url": "/ooo_tree/",
+            "path": "{dir}\\dst"
+        }
+    ]
+}

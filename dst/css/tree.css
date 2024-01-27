@@ -1,0 +1,46 @@
+table.ooo_tree {
+    border-collapse: collapse;
+}
+
+table.ooo_tree>thead>tr>th {
+    background-color: #448;
+    border: #88A solid 1px;
+}
+
+table.ooo_tree>tbody>tr>td {
+    border: #88A solid 1px;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+table.ooo_tree>tbody>tr>.calculated {
+    color: #888;
+    text-decoration-line: underline;
+}
+
+table.ooo_tree>tbody>tr>td:first-child {
+    padding-left: calc(var(--level) * 20px);
+    padding-right: 5px;
+}
+
+table.ooo_tree>tbody>tr>td:not(:first-child) {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+table.ooo_tree>tbody>tr>td:first-child>div {
+    display: flex;
+}
+
+table.ooo_tree>tbody>tr>td:first-child>div>img {
+    width: 16px;
+    margin: 3px;
+}
+
+table.ooo_tree>tbody>tr>td.select {
+    background-color: #222;
+}
+
+table.ooo_tree>tbody>tr>td.current {
+    background-color: #224;
+}
