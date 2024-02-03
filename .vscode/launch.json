@@ -8,7 +8,7 @@
             "name": "Launch Chrome(Local Server)",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:3000/ooo_tree/html/main.html?id=0",
+            "url": "http://localhost:3000/oootree/html/main.html?id=0",
             "webRoot": "${workspaceFolder}"
         },
         {

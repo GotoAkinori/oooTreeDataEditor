@@ -1,0 +1,15 @@
+{
+    "autoload": true,
+    "io": {
+        "load": {
+            "url": "../../command/load?id={urlparam.id}",
+            "headers": {
+                "Content-Type": "application/octet-stream"
+            }
+        },
+        "save": {
+            "url": "../../command/save?id={urlparam.id}",
+            "headers": {}
+        }
+    }
+}

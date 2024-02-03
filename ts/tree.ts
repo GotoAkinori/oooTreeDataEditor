@@ -93,6 +93,11 @@ namespace ooo.tree {
             this.setVisible(0, data.length);
             this.onAfterSetTableData_selection(data);
         }
+
+        public getTableData() {
+            return this.data;
+        }
+
         // #endregion
 
         // #region Util
@@ -492,7 +497,7 @@ namespace ooo.tree {
         }
         // #endregion
 
-        // #range Selection
+        // #region Selection
         public isActive = false;
         public selectionRange: Rect = new Rect(0, 0, 0, 0);
         public currentCell: Pos = new Pos(0, 0);
