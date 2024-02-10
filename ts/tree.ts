@@ -3,7 +3,6 @@ namespace ooo.tree {
         public columns: ColumnConfig[] = [];
         public iconPath: string = "../icon/";
         public data: TreeDataItem[] = [];
-        public calculations: CalculationManager = new CalculationManager(this);
         public cellDataManagers: { [column: string]: ICellDataManager } = {};
 
         // #region Event
@@ -26,9 +25,11 @@ namespace ooo.tree {
 
         // #region Init
         public constructor(
+            public name: string,
             public table: HTMLTableElement,
             public table_header: HTMLTableSectionElement,
-            public table_body: HTMLTableSectionElement
+            public table_body: HTMLTableSectionElement,
+            public calculationManager: CalculationManager
         ) {
             table.classList.add("ooo_tree");
             this.onInit_edit();
@@ -39,7 +40,7 @@ namespace ooo.tree {
             this.iconPath = path;
         }
 
-        public setHeader(columns: ColumnConfig[]) {
+        public setColumns(columns: ColumnConfig[]) {
             this.columns = columns;
             this.table_header.innerHTML = "";
             let tr = document.createElement("tr");
@@ -52,7 +53,6 @@ namespace ooo.tree {
 
             this.onAfterSetHeader_edit(columns);
             this.onAfterSetHeader_selection(columns);
-            this.onAfterSetHeader_calculation(columns);
         }
 
         public setTableData(data: TreeDataItem[]) {
@@ -92,6 +92,7 @@ namespace ooo.tree {
 
             this.setVisible(0, data.length);
             this.onAfterSetTableData_selection(data);
+            this.onAfterSetTableData_calculation();
         }
 
         public getTableData() {
@@ -319,12 +320,10 @@ namespace ooo.tree {
                             } break;
                             case "Delete": {
                                 let updateIndexes: { [column: string]: number[] } = {};
-                                let columnsToUpdate: string[] = [];
                                 for (let colIndex = this.selectionRange.left; colIndex < this.selectionRange.right; colIndex++) {
                                     let column = this.columns[colIndex].name;
                                     let cellDataManager = this.cellDataManagers[column];
                                     updateIndexes[column] = [];
-                                    columnsToUpdate.push(...this.calculations.depended[column]);
 
                                     for (let index = this.selectionRange.top; index < this.selectionRange.bottom; index++) {
                                         let cell = this.getEditArea(index, colIndex);
@@ -339,11 +338,12 @@ namespace ooo.tree {
                                 }
 
                                 // recalculation
-                                columnsToUpdate = Array.from(new Set(columnsToUpdate));
-                                this.calculations.propagateCalculationBatch({
-                                    level: [],
-                                    changeValue: updateIndexes,
-                                }, columnsToUpdate);
+                                this.calculationManager.propagateCalculationBatch({
+                                    [this.name]: {
+                                        level: [],
+                                        changeValue: updateIndexes,
+                                    }
+                                });
                             } break;
                             default: {
                                 if (ev.key.length == 1) { // TODO: not proper code.
@@ -624,19 +624,37 @@ namespace ooo.tree {
         // #endregion
 
         // #region Calculation
-        public onAfterSetHeader_calculation(columns: ColumnConfig[]) {
-            this.calculations.setHeader(columns);
-        }
         public onAfterEdit_calculation(cell: HTMLTableCellElement | HTMLSpanElement, before: any, after: any) {
             let td: HTMLTableCellElement = (cell.tagName == "TD" ? cell : cell.closest("td")) as HTMLTableCellElement;
             let columnIndex = td.cellIndex;
             let rowIndex = (td.parentElement as HTMLTableRowElement).rowIndex - 1;
             let column = this.columns[columnIndex].name;
 
-            this.calculations.propagateCalculationChangeValue(rowIndex, column);
+            this.calculationManager.propagateCalculationChangeValue(this.name, rowIndex, column);
         }
         public onChangeLevel_calculation(rowIndex: number, before: number, after: number) {
-            this.calculations.propagateCalculationChangeLevel(rowIndex);
+            this.calculationManager.propagateCalculationChangeLevel(this.name, rowIndex);
+        }
+        public onAfterSetTableData_calculation() {
+            // calculate all items
+            let values: { [column: string]: number[] } = {};
+            for (let rowIndex = 0; rowIndex < this.data.length; rowIndex++) {
+                this.data[rowIndex].calculatedData = undefined;
+
+                for (let column of this.columns) {
+                    if (this.data[rowIndex].data[column.name] !== undefined) {
+                        if (values[column.name] === undefined) {
+                            values[column.name] = [rowIndex];
+                        } else {
+                            values[column.name].push(rowIndex);
+                        }
+                    }
+                }
+            }
+
+            this.calculationManager.propagateCalculationBatch({
+                changeValue: values
+            });
         }
         // #endregion
     }

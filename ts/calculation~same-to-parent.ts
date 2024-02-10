@@ -1,11 +1,24 @@
 namespace ooo.tree {
     export class Calculation_sameToParent extends Calculation {
-        public constructor(column: string, arg: any) {
-            super(column, arg);
+        public columnName: string;
+        public treeName: string;
+
+        public constructor(public calculationConfig: CalculationConfig) {
+            super(calculationConfig);
+            [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
         }
-        public calculate(tree: TreeDataView, changes: TreeDataChanges): void {
+
+        public calculate(trees: Trees, changes: TreeDataChanges): void {
             let parentIndexes: number[] = [];
             let self = this;
+
+            // get tree. return if error.
+            let _tree = trees.getTree(this.treeName);
+            if (!_tree) { return; }
+            let tree = _tree;
+
+            let treeChange = changes[this.treeName];
+            if (!treeChange) { return; }
 
             // common function
             function updateData(index: number) {
@@ -13,21 +26,21 @@ namespace ooo.tree {
                 let calculatedValue: number | undefined;
 
                 if (parentIndex != -1) {
-                    calculatedValue = tree.getData(parentIndex, self.column);
+                    calculatedValue = tree.getData(parentIndex, self.columnName);
                 } else {
                     // Data of top level item is deleted
                     calculatedValue = undefined;
                 }
                 tree.setCalculatedData(
                     index,
-                    self.column,
+                    self.columnName,
                     calculatedValue);
             }
 
             // change value
-            if (changes.changeValue?.[this.column]) {
-                for (let index of changes.changeValue[this.column]) {
-                    if (tree.data[index].data[this.column] == undefined) {
+            if (treeChange.changeValue?.[this.columnName]) {
+                for (let index of treeChange.changeValue[this.columnName]) {
+                    if (tree.data[index].data[this.columnName] == undefined) {
                         updateData(index);
                     }
                     parentIndexes.push(index);
@@ -35,8 +48,8 @@ namespace ooo.tree {
             }
 
             // change levels
-            if (changes.level) {
-                for (let index of changes.level) {
+            if (treeChange.level) {
+                for (let index of treeChange.level) {
                     updateData(index);
                     parentIndexes.push(index);
                 }
@@ -47,44 +60,33 @@ namespace ooo.tree {
                 let parentIndex: number = parentIndexes.shift()!;
 
                 let childIndexes = tree.getChildren(parentIndex);
-                let value = tree.getData(parentIndex, this.column);
+                let value = tree.getData(parentIndex, this.columnName);
 
                 for (let childIndex of childIndexes) {
-                    let originalValue = tree.data[childIndex].data[this.column];
-                    let originalCalculatedValue = tree.data[childIndex].calculatedData?.[this.column] ?? undefined;
+                    let originalValue = tree.data[childIndex].data[this.columnName];
+                    let originalCalculatedValue = tree.data[childIndex].calculatedData?.[this.columnName] ?? undefined;
 
                     if (originalValue == undefined && originalCalculatedValue != value) {
                         parentIndexes.push(childIndex);
 
-                        tree.setCalculatedData(childIndex, this.column, value);
+                        tree.setCalculatedData(childIndex, this.columnName, value);
 
-                        if (!changes.changeValue) {
-                            changes.changeValue = { [this.column]: [childIndex] };
-                        } else if (!changes.changeValue[this.column]) {
-                            changes.changeValue[this.column] = [];
+                        if (!treeChange.changeValue) {
+                            treeChange.changeValue = { [this.columnName]: [childIndex] };
+                        } else if (!treeChange.changeValue[this.columnName]) {
+                            treeChange.changeValue[this.columnName] = [];
                         } else {
-                            changes.changeValue[this.column].push(childIndex);
+                            treeChange.changeValue[this.columnName].push(childIndex);
                         }
                     }
                 }
             }
         }
-        public getDepends(): string[] {
-            return [this.column];
-        }
-        public getChangeImpact(): { level: boolean; insert: boolean; delete: boolean; move: boolean; } {
-            return {
-                level: true,
-                insert: false,
-                delete: true,
-                move: false
-            }
-        }
     }
 
     export class CalculationCreator_sameToParent extends CalculationCreator<Calculation_sameToParent> {
-        public create(column: string, args: any): Calculation_sameToParent {
-            return new Calculation_sameToParent(column, args);
+        public create(calculationConfig: CalculationConfig): Calculation_sameToParent {
+            return new Calculation_sameToParent(calculationConfig);
         }
     }
     CalculationCreatorManager.addCreator("same_to_parent", new CalculationCreator_sameToParent());

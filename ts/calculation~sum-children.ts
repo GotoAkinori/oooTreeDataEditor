@@ -1,14 +1,29 @@
 namespace ooo.tree {
     export class Calculation_sumChildren extends Calculation {
-        public constructor(column: string, arg: any) {
-            super(column, arg);
+        public attributes: string[];
+        public columnName: string;
+        public treeName: string;
+
+        public constructor(public calculationConfig: CalculationConfig) {
+            super(calculationConfig);
+            [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
+            this.attributes = calculationConfig.arguments.attributes;
         }
-        public calculate(tree: TreeDataView, change: TreeDataChanges): void {
+
+        public calculate(trees: Trees, changes: TreeDataChanges): void {
             let indexesToUpdate: number[] = [];
+            
+            // get tree. return if error.
+            let _tree = trees.getTree(this.treeName);
+            if (!_tree) { return; }
+            let tree = _tree;
+
+            let treeChange = changes[this.treeName];
+            if (!treeChange) { return; }
 
             // update values
-            if (change.changeValue?.[this.column]) {
-                for (let index of change.changeValue[this.column]) {
+            if (treeChange.changeValue?.[this.columnName]) {
+                for (let index of treeChange.changeValue[this.columnName]) {
                     indexesToUpdate.push(index);
                     let parentIndex = tree.getParent(index);
                     if (parentIndex >= 0) {
@@ -18,8 +33,8 @@ namespace ooo.tree {
             }
 
             // change levels
-            if (change.level) {
-                for (let index of change.level) {
+            if (treeChange.level) {
+                for (let index of treeChange.level) {
                     indexesToUpdate.push(index);
                     let parentIndex = tree.getParent(index);
                     if (parentIndex >= 0) {
@@ -35,8 +50,8 @@ namespace ooo.tree {
             }
 
             // delete items
-            if (change.delete) {
-                for (let index of change.delete) {
+            if (treeChange.delete) {
+                for (let index of treeChange.delete) {
                     let parentIndex = tree.getParent(index);
                     if (parentIndex >= 0) {
                         indexesToUpdate.push(parentIndex);
@@ -45,8 +60,8 @@ namespace ooo.tree {
             }
 
             // insert items
-            if (change.insert) {
-                for (let index of change.insert) {
+            if (treeChange.insert) {
+                for (let index of treeChange.insert) {
                     let parentIndex = tree.getParent(index);
                     if (parentIndex >= 0) {
                         indexesToUpdate.push(parentIndex);
@@ -58,19 +73,19 @@ namespace ooo.tree {
                 indexesToUpdate.sort((a, b) => a - b);
                 let updateIndex: number = indexesToUpdate.pop()!;
 
-                let originalValue = tree.data[updateIndex].data[this.column];
-                let originalCalculatedValue = tree.data[updateIndex].calculatedData?.[this.column] ?? undefined;
+                let originalValue = tree.data[updateIndex].data[this.columnName];
+                let originalCalculatedValue = tree.data[updateIndex].calculatedData?.[this.columnName] ?? undefined;
 
                 let result = tree
                     .getChildren(updateIndex)
                     .reduce(
                         (sum, v) => {
-                            return sum + (tree.data[v].data[this.column] ?? tree.data[v].calculatedData?.[this.column] ?? 0)
+                            return sum + (tree.data[v].data[this.columnName] ?? tree.data[v].calculatedData?.[this.columnName] ?? 0)
                         },
                         0);
 
-                if (!tree.data[updateIndex].data[this.column] && tree.data[updateIndex].calculatedData?.[this.column] != result) {
-                    tree.setCalculatedData(updateIndex, this.column, result);
+                if (!tree.data[updateIndex].data[this.columnName] && tree.data[updateIndex].calculatedData?.[this.columnName] != result) {
+                    tree.setCalculatedData(updateIndex, this.columnName, result);
 
                     if (originalValue == undefined && originalCalculatedValue != result) {
                         let parentIndex = tree.getParent(updateIndex);
@@ -78,12 +93,12 @@ namespace ooo.tree {
                             indexesToUpdate.push(tree.getParent(updateIndex));
                         }
 
-                        if (!change.changeValue) {
-                            change.changeValue = { [this.column]: [updateIndex] };
-                        } else if (!change.changeValue[this.column]) {
-                            change.changeValue[this.column] = [];
+                        if (!treeChange.changeValue) {
+                            treeChange.changeValue = { [this.columnName]: [updateIndex] };
+                        } else if (!treeChange.changeValue[this.columnName]) {
+                            treeChange.changeValue[this.columnName] = [];
                         } else {
-                            change.changeValue[this.column].push(updateIndex);
+                            treeChange.changeValue[this.columnName].push(updateIndex);
                         }
                     }
                 }
@@ -91,7 +106,7 @@ namespace ooo.tree {
 
         }
         public getDepends(): string[] {
-            return [this.column];
+            return [this.columnName];
         }
         public getChangeImpact(): { level: boolean; insert: boolean; delete: boolean; move: boolean; } {
             return {
@@ -104,8 +119,8 @@ namespace ooo.tree {
     }
 
     export class CalculationCreator_childSum extends CalculationCreator<Calculation_sumChildren> {
-        public create(column: string, args: any): Calculation_sumChildren {
-            return new Calculation_sumChildren(column, args);
+        public create(calculationConfig: CalculationConfig): Calculation_sumChildren {
+            return new Calculation_sumChildren(calculationConfig);
         }
     }
     CalculationCreatorManager.addCreator("sum_children", new CalculationCreator_childSum());

@@ -2,15 +2,15 @@
     "autoload": true,
     "io": {
         "load": {
-            "method": "GET",
-            "url": "../../sample_data/test-local.oootree",
+            "method": "POST",
+            "url": "../../command/load?id={urlparam.id}",
             "headers": {
                 "Content-Type": "application/octet-stream"
             }
         },
         "save": {
             "method": "POST",
-            "url": "../../sample_data/test-local.oootree",
+            "url": "../../command/save?id={urlparam.id}",
             "headers": {}
         }
     }

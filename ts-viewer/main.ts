@@ -3,7 +3,7 @@ namespace ooo.tree.viewer {
     let format: any;
     let formatName: string;
     let query: { [key: string]: string };
-    let tree: TreeDataView;
+    let trees: Trees;
 
     async function init() {
         query = getURLParam();
@@ -19,27 +19,35 @@ namespace ooo.tree.viewer {
     }
 
     async function load() {
-        let treeData = await loadFile(config.io.load, {
+        let data = await loadFile(config.io.load, {
             urlparam: query
         });
 
-        tree = new ooo.tree.TreeDataView(
-            document.getElementById("tree_table") as HTMLTableElement,
-            document.getElementById("tree_table_head") as HTMLTableSectionElement,
-            document.getElementById("tree_table_body") as HTMLTableSectionElement
-        );
-
-        formatName = treeData.format;
+        formatName = data.format;
         format = await loadConfig(formatName);
-        tree.setHeader(format.columns);
-        tree.setTableData(treeData.data);
+        trees = new Trees(formatName);
+
+        let mainDiv = document.getElementById("main") as HTMLDivElement;
+
+        for (let tree of format.trees) {
+            let table = document.createElement("table");
+            let thead = document.createElement("thead");
+            let tbody = document.createElement("tbody");
+            mainDiv.append(tree.name);
+            mainDiv.append(table);
+            table.append(thead);
+            table.append(tbody);
+
+            trees.addTrees(tree.name, table, thead, tbody);
+        }
+
+        trees.setFormat(format);
+        trees.setData(data);
+        trees.initData();
     }
 
     async function save() {
-        let treeData = {
-            data: tree.getTableData(),
-            format: formatName
-        }
+        let treeData = trees.getData();
         await saveFile(config.io.save, {
             urlparam: query
         }, JSON.stringify(treeData));
@@ -71,7 +79,7 @@ namespace ooo.tree.viewer {
             config.url,
             param
         ), {
-            method: "POST",
+            method: config.method,
             cache: "no-cache",
             headers: {
                 "Content-Type": "application/octet-stream",
@@ -85,7 +93,7 @@ namespace ooo.tree.viewer {
             config.url,
             param
         ), {
-            method: "POST",
+            method: config.method,
             cache: "no-cache",
         });
         return await res.json();

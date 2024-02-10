@@ -1,65 +1,81 @@
 {
+    "version": "1.0",
     "name": "sample",
-    "columns": [
+    "trees": [
         {
-            "name": "id",
-            "caption": "ID"
-        },
-        {
-            "name": "name",
-            "caption": "NAME"
-        },
-        {
-            "name": "sum_children",
-            "caption": "Sum Children",
-            "readonly": false,
-            "value_type": "number",
-            "default_value": 0,
-            "calculate": {
-                "type": "sum_children",
-                "arguments": {}
-            }
-        },
-        {
-            "name": "same_to_parent",
-            "caption": "Same to Parent",
-            "readonly": false,
-            "value_type": "number",
-            "default_value": 0,
-            "calculate": {
-                "type": "same_to_parent",
-                "arguments": {}
-            }
-        },
-        {
-            "name": "sum_attribute",
-            "caption": "sum attribute",
-            "readonly": false,
-            "value_type": "number",
-            "default_value": 0,
-            "calculate": {
-                "type": "sum_attribute",
-                "arguments": {
-                    "attributes": [
-                        "sum_children",
-                        "same_to_parent"
-                    ]
+            "name": "main",
+            "columns": [
+                {
+                    "name": "id",
+                    "caption": "ID"
+                },
+                {
+                    "name": "name",
+                    "caption": "NAME"
+                },
+                {
+                    "name": "sum_children",
+                    "caption": "Sum Children",
+                    "readonly": false,
+                    "value_type": "number",
+                    "default_value": 0
+                },
+                {
+                    "name": "same_to_parent",
+                    "caption": "Same to Parent",
+                    "readonly": false,
+                    "value_type": "number",
+                    "default_value": 0
+                },
+                {
+                    "name": "sum_attribute",
+                    "caption": "sum attribute",
+                    "readonly": false,
+                    "value_type": "number",
+                    "default_value": 0
+                },
+                {
+                    "name": "same_to_parent_ratio",
+                    "caption": "same to parent ratio",
+                    "readonly": false,
+                    "value_type": "number",
+                    "default_value": 0
                 }
+            ]
+        }
+    ],
+    "calculations": [
+        {
+            "type": "sum_children",
+            "arguments": {
+                "target_column": "main.sum_children",
+                "attributes": [
+                    "main.sum_children",
+                    "main.same_to_parent"
+                ]
             }
         },
         {
-            "name": "same_to_parent_ratio",
-            "caption": "same to parent ratio",
-            "readonly": false,
-            "value_type": "number",
-            "default_value": 0,
-            "calculate": {
-                "type": "same_to_parent_ratio",
-                "arguments": {
-                    "base": [
-                        "sum_children"
-                    ]
-                }
+            "type": "same_to_parent",
+            "arguments": {
+                "target_column": "main.same_to_parent"
+            }
+        },
+        {
+            "type": "sum_attribute",
+            "arguments": {
+                "target_column": "main.sum_attribute",
+                "attributes": [
+                    "sum_children",
+                    "same_to_parent"
+                ]
+            }
+        },
+        {
+            "type": "same_to_parent_ratio",
+            "arguments": {
+                "target_column": "main.same_to_parent_ratio",
+                "base": "main.sum_children"
             }
         }
     ]

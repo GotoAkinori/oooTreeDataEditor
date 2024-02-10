@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "chrome",
             "url": "http://localhost:3000/oootree/html/main.html?id=0",
-            "webRoot": "${workspaceFolder}"
+            "webRoot": "${workspaceFolder}/ts"
         },
         {
             "name": "Launch Chrome(Live Viewer)",

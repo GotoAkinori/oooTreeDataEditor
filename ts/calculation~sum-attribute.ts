@@ -1,15 +1,28 @@
 namespace ooo.tree {
     export class Calculation_sumAttributes extends Calculation {
         public attributes: string[];
-        public constructor(column: string, arg: any) {
-            super(column, arg);
-            this.attributes = arg.attributes;
+        public columnName: string;
+        public treeName: string;
+
+        public constructor(public calculationConfig: CalculationConfig) {
+            super(calculationConfig);
+            [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
+            this.attributes = calculationConfig.arguments.attributes;
         }
-        public calculate(tree: TreeDataView, change: TreeDataChanges): void {
+
+        public calculate(trees: Trees, changes: TreeDataChanges): void {
+            // get tree. return if error.
+            let _tree = trees.getTree(this.treeName);
+            if (!_tree) { return; }
+            let tree = _tree;
+
+            let treeChange = changes[this.treeName];
+            if (!treeChange) { return; }
+
             let indexToUpdate: number[] = [];
             for (let attribute of this.attributes) {
-                if (change.changeValue?.[attribute]) {
-                    indexToUpdate.push(...change.changeValue?.[attribute]);
+                if (treeChange.changeValue?.[attribute]) {
+                    indexToUpdate.push(...treeChange.changeValue?.[attribute]);
                 }
             }
 
@@ -17,7 +30,7 @@ namespace ooo.tree {
             indexToUpdate = [...indexToUpdateSet];
 
             for (let index of indexToUpdate) {
-                if (tree.data[index].data[this.column] == undefined) {
+                if (tree.data[index].data[this.columnName] == undefined) {
                     let sum = 0;
                     for (let attribute of this.attributes) {
                         let value = tree.getData(index, attribute) ?? 0;
@@ -25,14 +38,14 @@ namespace ooo.tree {
                             sum += value;
                         }
                     }
-                    tree.setCalculatedData(index, this.column, sum);
+                    tree.setCalculatedData(index, this.columnName, sum);
 
-                    if (!change.changeValue) {
-                        change.changeValue = { [this.column]: [index] };
-                    } else if (!change.changeValue[this.column]) {
-                        change.changeValue[this.column] = [];
+                    if (!treeChange.changeValue) {
+                        treeChange.changeValue = { [this.columnName]: [index] };
+                    } else if (!treeChange.changeValue[this.columnName]) {
+                        treeChange.changeValue[this.columnName] = [];
                     } else {
-                        change.changeValue[this.column].push(index);
+                        treeChange.changeValue[this.columnName].push(index);
                     }
                 }
             }
@@ -51,8 +64,8 @@ namespace ooo.tree {
     }
 
     export class CalculationCreator_sumAttributes extends CalculationCreator<Calculation_sumAttributes> {
-        public create(column: string, args: any): Calculation_sumAttributes {
-            return new Calculation_sumAttributes(column, args);
+        public create(calculationConfig: CalculationConfig): Calculation_sumAttributes {
+            return new Calculation_sumAttributes(calculationConfig);
         }
     }
     CalculationCreatorManager.addCreator("sum_attribute", new CalculationCreator_sumAttributes());
