@@ -17,7 +17,8 @@ namespace ooo.tree {
                         name: v.name,
                         data: v.tree.data
                     }
-                })
+                }),
+                format: this.formatName
             }
         }
 
