@@ -1114,7 +1114,7 @@ var ooo;
                 let index = row.rowIndex - 1; // "-1" is header row.
                 let tr = this.getRow(index);
                 tr.remove();
-                this.data.splice(row.rowIndex, 1);
+                this.data.splice(index, 1);
             }
             setLevel(index, level) {
                 // check if the item is not the first one or out of bound.

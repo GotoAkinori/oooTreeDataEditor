@@ -390,6 +390,7 @@ namespace ooo.tree {
                 }
             }, { capture: true });
         }
+
         public onAfterSetHeader_edit(columns: ColumnConfig[]) {
             this.cellDataManagers = {};
             for (let column of columns) {
@@ -442,7 +443,7 @@ namespace ooo.tree {
             let index = row.rowIndex - 1; // "-1" is header row.
             let tr = this.getRow(index);
             tr.remove();
-            this.data.splice(row.rowIndex, 1);
+            this.data.splice(index, 1);
         }
 
         public setLevel(index: number, level: number) {
