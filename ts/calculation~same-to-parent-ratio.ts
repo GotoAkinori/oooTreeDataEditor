@@ -10,6 +10,10 @@ namespace ooo.tree {
             this.baseColumnName = calculationConfig.arguments.base;
             [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
             [this.baseTreeName, this.baseColumnName] = calculationConfig.arguments.base.split(".");
+
+            if (this.treeName !== this.baseTreeName) {
+                console.warn(`[OOOTREE][Calculation(same_to_parent_ratio)] Calculation format is unexpected. Tree of target and base should be the same. (target=${calculationConfig.arguments.target_column}, base=${calculationConfig.arguments.base})`);
+            }
         }
 
         public calculate(trees: Trees, changes: TreeDataChanges): void {
@@ -59,13 +63,21 @@ namespace ooo.tree {
             }
 
             // change value
+            let changeIndex: number[] = [];
             if (treeChange.changeValue?.[this.columnName]) {
-                for (let index of treeChange.changeValue[this.columnName]) {
-                    if (tree.data[index].data[this.columnName] == undefined) {
-                        updateData(index);
-                    }
-                    parentIndexes.push(index);
+                changeIndex.push(...treeChange.changeValue[this.columnName]);
+            }
+            if (treeChange.changeValue?.[this.baseColumnName]) {
+                changeIndex.push(...treeChange.changeValue[this.baseColumnName]);
+            }
+            const changeIndexSet = new Set(changeIndex);
+            changeIndex = [...changeIndexSet];
+
+            for (let index of changeIndex) {
+                if (tree.data[index].data[this.columnName] == undefined) {
+                    updateData(index);
                 }
+                parentIndexes.push(index);
             }
 
             // change levels
@@ -75,6 +87,17 @@ namespace ooo.tree {
                     parentIndexes.push(index);
                 }
             }
+
+            // insert row
+            if (treeChange.insert) {
+                for (let index of treeChange.insert) {
+                    updateData(index);
+                    parentIndexes.push(index);
+                }
+            }
+
+            const parentIndexesSet = new Set(parentIndexes);
+            parentIndexes = [...changeIndexSet];
 
             while (parentIndexes.length > 0) {
                 parentIndexes.sort((a, b) => a - b);

@@ -9,6 +9,7 @@ namespace ooo.tree {
             originalData: any,
             calculatedData: any,
             onEnd: (data: any) => void,
+            option?: EditCellOption,
             ev?: KeyboardEvent
         ): void;
         getDefaultValue(): any;
@@ -35,7 +36,8 @@ namespace ooo.tree {
             originalData: T_DATA,
             calculatedData: T_DATA | undefined,
             onEnd: (data: T_DATA) => void,
-            ev: KeyboardEvent
+            option?: EditCellOption,
+            ev?: KeyboardEvent
         ): void;
     }
 
@@ -48,6 +50,7 @@ namespace ooo.tree {
                 onCancel?: () => void
             },
             type: string,
+            option?: EditCellOption,
             ev?: KeyboardEvent
         ) {
             let input = document.createElement("input");
@@ -56,7 +59,7 @@ namespace ooo.tree {
 
             tree.editing = true;
 
-            input.value = cell.innerText;
+            input.value = option?.keepValue ? cell.innerText : "";
             input.type = type;
             cell.innerHTML = "";
             cell.append(input);

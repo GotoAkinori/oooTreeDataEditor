@@ -27,7 +27,8 @@ namespace ooo.tree {
             originalData: string,
             calculatedData: string | undefined,
             onEnd: (data: string) => void,
-            ev: KeyboardEvent): void {
+            option?: EditCellOption,
+            ev?: KeyboardEvent): void {
             CellDataManagerUtil.onEditWithInput(
                 tree,
                 cell,
@@ -41,6 +42,7 @@ namespace ooo.tree {
                     }
                 },
                 "text",
+                option,
                 ev
             )
         }

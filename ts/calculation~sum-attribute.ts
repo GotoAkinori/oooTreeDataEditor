@@ -20,9 +20,18 @@ namespace ooo.tree {
             if (!treeChange) { return; }
 
             let indexToUpdate: number[] = [];
+
+            // change values
             for (let attribute of this.attributes) {
                 if (treeChange.changeValue?.[attribute]) {
                     indexToUpdate.push(...treeChange.changeValue?.[attribute]);
+                }
+            }
+
+            // insert row
+            if (treeChange.insert) {
+                for (let index of treeChange.insert) {
+                    indexToUpdate.push(index);
                 }
             }
 

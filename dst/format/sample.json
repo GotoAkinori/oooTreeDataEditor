@@ -24,22 +24,19 @@
                     "name": "same_to_parent",
                     "caption": "Same to Parent",
                     "readonly": false,
-                    "value_type": "number",
-                    "default_value": 0
+                    "value_type": "number"
                 },
                 {
                     "name": "sum_attribute",
                     "caption": "sum attribute",
                     "readonly": false,
-                    "value_type": "number",
-                    "default_value": 0
+                    "value_type": "number"
                 },
                 {
                     "name": "same_to_parent_ratio",
                     "caption": "same to parent ratio",
                     "readonly": false,
-                    "value_type": "number",
-                    "default_value": 0
+                    "value_type": "number"
                 }
             ]
         }

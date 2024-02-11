@@ -217,7 +217,7 @@ namespace ooo.tree {
             this.setTreeType(td, type);
 
             span.innerText = data;
-            td.addEventListener("dblclick", (ev) => { this.edit(span, col.name); });
+            td.addEventListener("dblclick", (ev) => { this.edit(span, col.name, true); });
             img.addEventListener("click", () => { this.switch(row.rowIndex - 1) });
         }
 
@@ -227,7 +227,7 @@ namespace ooo.tree {
 
             td.innerText = data;
             td.addEventListener("dblclick", (ev) => {
-                this.edit(td, col.name);
+                this.edit(td, col.name, true);
             });
         }
 
@@ -316,7 +316,8 @@ namespace ooo.tree {
                             case "F2": {
                                 this.edit(this.getEditArea(
                                     this.currentCell.row, this.currentCell.col),
-                                    this.columns[this.currentCell.col].name);
+                                    this.columns[this.currentCell.col].name,
+                                    true);
                             } break;
                             case "Delete": {
                                 let updateIndexes: { [column: string]: number[] } = {};
@@ -350,6 +351,7 @@ namespace ooo.tree {
                                     this.edit(this.getEditArea(
                                         this.currentCell.row, this.currentCell.col),
                                         this.columns[this.currentCell.col].name,
+                                        false,
                                         ev);
                                 }
                             } break;
@@ -358,7 +360,20 @@ namespace ooo.tree {
                     else {
                         switch (ev.key) {
                             case "i": {
-                                this.add(this.getRow(this.currentCell.row));
+                                this.addRow(this.getRow(this.currentCell.row));
+                                this.onInsertRow_calculation(this.currentCell.row);
+                                ev.preventDefault();
+                                ev.stopPropagation();
+                            } break;
+                            case "d": {
+                                let startIndex = this.currentCell.row;
+                                let endIndex = this.getChildRange(startIndex);
+                                for (let i = startIndex; i < endIndex; i++) {
+                                    this.removeRow(this.getRow(startIndex));
+                                }
+                                this.onDeleteRow_calculation(startIndex);
+                                ev.preventDefault();
+                                ev.stopPropagation();
                             } break;
                             case "ArrowRight": {
                                 this.setLevel(this.currentCell.row, this.getLevel(this.currentCell.row) + 1);
@@ -382,7 +397,7 @@ namespace ooo.tree {
             }
         }
 
-        public edit(cell: HTMLTableCellElement | HTMLSpanElement, column: string, ev?: KeyboardEvent) {
+        public edit(cell: HTMLTableCellElement | HTMLSpanElement, column: string, keepValue: boolean, ev?: KeyboardEvent) {
             let index = (cell.closest("tr") as HTMLTableRowElement).rowIndex - 1;
 
             let cellDataManager = this.cellDataManagers[column];
@@ -398,11 +413,14 @@ namespace ooo.tree {
                     this.data[index].data[column] = data;
                     this.onAfterEdit_calculation(cell, originalData, data);
                 },
+                {
+                    keepValue: keepValue
+                },
                 ev
             );
         }
 
-        public add(row: HTMLTableRowElement) {
+        public addRow(row: HTMLTableRowElement) {
             let tr = this.table_body.insertRow(row.rowIndex);
             let level = this.data[row.rowIndex - 1].level;
             for (let colIndex = 0; colIndex < this.columns.length; colIndex++) {
@@ -414,6 +432,17 @@ namespace ooo.tree {
                     this.addCell(tr, col, value);
                 }
             }
+            this.data.splice(row.rowIndex, 0, {
+                data: {},
+                level: level
+            });
+        }
+
+        public removeRow(row: HTMLTableRowElement) {
+            let index = row.rowIndex - 1; // "-1" is header row.
+            let tr = this.getRow(index);
+            tr.remove();
+            this.data.splice(row.rowIndex, 1);
         }
 
         public setLevel(index: number, level: number) {
@@ -632,9 +661,19 @@ namespace ooo.tree {
 
             this.calculationManager.propagateCalculationChangeValue(this.name, rowIndex, column);
         }
+
         public onChangeLevel_calculation(rowIndex: number, before: number, after: number) {
             this.calculationManager.propagateCalculationChangeLevel(this.name, rowIndex);
         }
+
+        public onInsertRow_calculation(rowIndex: number) {
+            this.calculationManager.propagateCalculationChangeInsert(this.name, rowIndex);
+        }
+
+        public onDeleteRow_calculation(rowIndex: number) {
+            this.calculationManager.propagateCalculationChangeDelete(this.name, rowIndex);
+        }
+
         public onAfterSetTableData_calculation() {
             // calculate all items
             let values: { [column: string]: number[] } = {};

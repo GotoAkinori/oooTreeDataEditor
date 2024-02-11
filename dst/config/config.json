@@ -10,7 +10,7 @@
         },
         "save": {
             "method": "POST",
-            "url": "../../sample_data/test-local.oootree",
+            "url": "../../command/save?id={urlparam.id}",
             "headers": {}
         }
     }

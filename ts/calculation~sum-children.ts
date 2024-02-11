@@ -12,7 +12,7 @@ namespace ooo.tree {
 
         public calculate(trees: Trees, changes: TreeDataChanges): void {
             let indexesToUpdate: number[] = [];
-            
+
             // get tree. return if error.
             let _tree = trees.getTree(this.treeName);
             if (!_tree) { return; }
@@ -52,7 +52,7 @@ namespace ooo.tree {
             // delete items
             if (treeChange.delete) {
                 for (let index of treeChange.delete) {
-                    let parentIndex = tree.getParent(index);
+                    let parentIndex = tree.getParent(index - 1);
                     if (parentIndex >= 0) {
                         indexesToUpdate.push(parentIndex);
                     }
@@ -62,7 +62,7 @@ namespace ooo.tree {
             // insert items
             if (treeChange.insert) {
                 for (let index of treeChange.insert) {
-                    let parentIndex = tree.getParent(index);
+                    let parentIndex = tree.getParent(index - 1);
                     if (parentIndex >= 0) {
                         indexesToUpdate.push(parentIndex);
                     }
@@ -103,8 +103,8 @@ namespace ooo.tree {
                     }
                 }
             }
-
         }
+
         public getDepends(): string[] {
             return [this.columnName];
         }

@@ -58,4 +58,7 @@ namespace ooo.tree {
         }[]
     }
 
+    export type EditCellOption = {
+        keepValue?: boolean
+    }
 }

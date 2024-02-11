@@ -21,6 +21,7 @@ namespace ooo.tree {
             if (!treeChange) { return; }
 
             // common function
+            // update specified value
             function updateData(index: number) {
                 let parentIndex = tree.getParent(index);
                 let calculatedValue: number | undefined;
@@ -50,6 +51,14 @@ namespace ooo.tree {
             // change levels
             if (treeChange.level) {
                 for (let index of treeChange.level) {
+                    updateData(index);
+                    parentIndexes.push(index);
+                }
+            }
+
+            // insert row
+            if (treeChange.insert) {
+                for (let index of treeChange.insert) {
                     updateData(index);
                     parentIndexes.push(index);
                 }
