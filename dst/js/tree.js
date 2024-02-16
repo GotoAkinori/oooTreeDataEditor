@@ -91,6 +91,116 @@ var ooo;
 var ooo;
 (function (ooo) {
     var tree;
+    (function (tree) {
+        class Calculation_lookup extends tree.Calculation {
+            constructor(calculationConfig) {
+                super(calculationConfig);
+                this.calculationConfig = calculationConfig;
+                let targetTreeName2;
+                let referenceTreeName2;
+                [this.targetTreeName, this.targetValue] = calculationConfig.arguments.target_column.split(".");
+                [targetTreeName2, this.targetKey] = calculationConfig.arguments.lookup_key.split(".");
+                [this.referenceTreeName, this.referenceValue] = calculationConfig.arguments.refernce_value.split(".");
+                [referenceTreeName2, this.referenceKey] = calculationConfig.arguments.refernce_key.split(".");
+                if (targetTreeName2 !== this.targetTreeName) {
+                    console.warn(`[OOOTREE][Calculation(calculationConfig)][lookup] Calculation format is unexpected. Tree of target and lookup-key should be the same. (target_column=${calculationConfig.arguments.target_column}, lookup_key=${calculationConfig.arguments.lookup_key})`);
+                }
+                if (referenceTreeName2 !== this.referenceTreeName) {
+                    console.warn(`[OOOTREE][Calculation(calculationConfig)][lookup] Calculation format is unexpected. Tree of target and lookup-key should be the same. (refernce_key=${calculationConfig.arguments.refernce_key}, refernce_value=${calculationConfig.arguments.refernce_value})`);
+                }
+            }
+            calculate(trees, changes) {
+                var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+                let self = this;
+                // get tree. return if error.
+                let _targetTree = trees.getTree(this.targetTreeName);
+                if (!_targetTree) {
+                    return;
+                }
+                let targetTree = _targetTree;
+                let _referenceTree = trees.getTree(this.referenceTreeName);
+                if (!_referenceTree) {
+                    return;
+                }
+                let referenceTree = _referenceTree;
+                // make reference table
+                function getReferenceTable() {
+                    let referenceTable = {};
+                    for (let i = 0; i < referenceTree.data.length; i++) {
+                        let key = referenceTree.getData(i, self.referenceKey);
+                        let value = referenceTree.getData(i, self.referenceValue);
+                        if (key !== undefined) {
+                            referenceTable[key] = value;
+                        }
+                    }
+                    return referenceTable;
+                }
+                ;
+                // return if any of related columns are not updated.
+                if (!((_b = (_a = changes[this.referenceTreeName]) === null || _a === void 0 ? void 0 : _a.changeValue) === null || _b === void 0 ? void 0 : _b[this.referenceKey]) &&
+                    !((_d = (_c = changes[this.referenceTreeName]) === null || _c === void 0 ? void 0 : _c.changeValue) === null || _d === void 0 ? void 0 : _d[this.referenceValue]) &&
+                    !((_e = changes[this.referenceTreeName]) === null || _e === void 0 ? void 0 : _e.insert) &&
+                    !((_f = changes[this.referenceTreeName]) === null || _f === void 0 ? void 0 : _f.delete) &&
+                    !((_h = (_g = changes[this.targetTreeName]) === null || _g === void 0 ? void 0 : _g.changeValue) === null || _h === void 0 ? void 0 : _h[this.targetKey]) &&
+                    !((_k = (_j = changes[this.targetTreeName]) === null || _j === void 0 ? void 0 : _j.changeValue) === null || _k === void 0 ? void 0 : _k[this.targetValue]) &&
+                    !((_l = changes[this.targetTreeName]) === null || _l === void 0 ? void 0 : _l.insert) &&
+                    !((_m = changes[this.targetTreeName]) === null || _m === void 0 ? void 0 : _m.delete)) {
+                    return;
+                }
+                let referenceKeyUpdated = ((_o = changes[this.referenceKey]) === null || _o === void 0 ? void 0 : _o.changeValue) || ((_p = changes[this.referenceKey]) === null || _p === void 0 ? void 0 : _p.insert) || ((_q = changes[this.referenceKey]) === null || _q === void 0 ? void 0 : _q.delete);
+                let updatedReferenceValueIndexes = (_u = (_t = (_s = (_r = changes[this.referenceTreeName]) === null || _r === void 0 ? void 0 : _r.changeValue) === null || _s === void 0 ? void 0 : _s[this.referenceValue]) === null || _t === void 0 ? void 0 : _t.map(i => referenceTree.data[i].data[this.referenceKey])) !== null && _u !== void 0 ? _u : [];
+                let updatedTargetKeyIndexes = (_x = (_w = (_v = changes[this.targetTreeName]) === null || _v === void 0 ? void 0 : _v.changeValue) === null || _w === void 0 ? void 0 : _w[this.targetKey]) !== null && _x !== void 0 ? _x : [];
+                let updatedTargetValueIndexes = (_0 = (_z = (_y = changes[this.targetTreeName]) === null || _y === void 0 ? void 0 : _y.changeValue) === null || _z === void 0 ? void 0 : _z[this.targetValue]) !== null && _0 !== void 0 ? _0 : [];
+                // update all data if any of reference keys are changed.
+                let referenceTable = getReferenceTable();
+                // update values.
+                for (let i = 0; i < targetTree.data.length; i++) {
+                    let key = targetTree.getData(i, self.targetKey);
+                    let value = key === undefined ? undefined : referenceTable[key];
+                    if (referenceKeyUpdated ||
+                        key !== undefined ||
+                        updatedReferenceValueIndexes.indexOf(key) != -1 ||
+                        updatedTargetKeyIndexes.indexOf(i) != -1 ||
+                        updatedTargetValueIndexes.indexOf(i) != -1) {
+                        let originalValue = targetTree.data[i].data[this.targetValue];
+                        let originalCalculatedValue = (_1 = targetTree.data[i].calculatedData) === null || _1 === void 0 ? void 0 : _1[this.targetValue];
+                        if (originalValue || value == originalCalculatedValue) {
+                            // It has the real value => skip
+                            // The calculated value is not updated => skip
+                            continue;
+                        }
+                        else {
+                            // set value
+                            targetTree.setCalculatedData(i, this.targetValue, value);
+                            // add updated value
+                            if (!changes[this.targetTreeName]) {
+                                changes[this.targetTreeName] = {};
+                            }
+                            if (!changes[this.targetTreeName].changeValue) {
+                                changes[this.targetTreeName].changeValue = {};
+                            }
+                            if (!changes[this.targetTreeName].changeValue[this.targetValue]) {
+                                changes[this.targetTreeName].changeValue[this.targetValue] = [];
+                            }
+                            changes[this.targetTreeName].changeValue[this.targetValue].push(i);
+                        }
+                    }
+                }
+            }
+        }
+        tree.Calculation_lookup = Calculation_lookup;
+        class CalculationCreator_lookup extends tree.CalculationCreator {
+            create(calculationConfig) {
+                return new Calculation_lookup(calculationConfig);
+            }
+        }
+        tree.CalculationCreator_lookup = CalculationCreator_lookup;
+        tree.CalculationCreatorManager.addCreator("lookup", new CalculationCreator_lookup());
+    })(tree = ooo.tree || (ooo.tree = {}));
+})(ooo || (ooo = {}));
+var ooo;
+(function (ooo) {
+    var tree;
     (function (tree_2) {
         class Calculation_sameToParentRatio extends tree_2.Calculation {
             constructor(calculationConfig) {
@@ -100,7 +210,7 @@ var ooo;
                 [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
                 [this.baseTreeName, this.baseColumnName] = calculationConfig.arguments.base.split(".");
                 if (this.treeName !== this.baseTreeName) {
-                    console.warn(`[OOOTREE][Calculation(same_to_parent_ratio)] Calculation format is unexpected. Tree of target and base should be the same. (target=${calculationConfig.arguments.target_column}, base=${calculationConfig.arguments.base})`);
+                    console.warn(`[OOOTREE][Calculation(same_to_parent_ratio)][same_to_parent_ratio] Calculation format is unexpected. Tree of target and base should be the same. (target=${calculationConfig.arguments.target_column}, base=${calculationConfig.arguments.base})`);
                 }
             }
             calculate(trees, changes) {
@@ -378,17 +488,6 @@ var ooo;
                     }
                 }
             }
-            getDepends() {
-                return this.attributes;
-            }
-            getChangeImpact() {
-                return {
-                    level: false,
-                    insert: false,
-                    delete: false,
-                    move: false
-                };
-            }
         }
         tree_4.Calculation_sumAttributes = Calculation_sumAttributes;
         class CalculationCreator_sumAttributes extends tree_4.CalculationCreator {
@@ -409,7 +508,6 @@ var ooo;
                 super(calculationConfig);
                 this.calculationConfig = calculationConfig;
                 [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
-                this.attributes = calculationConfig.arguments.attributes;
             }
             calculate(trees, changes) {
                 var _a, _b, _c, _d;
@@ -498,17 +596,6 @@ var ooo;
                         }
                     }
                 }
-            }
-            getDepends() {
-                return [this.columnName];
-            }
-            getChangeImpact() {
-                return {
-                    level: true,
-                    insert: false,
-                    delete: true,
-                    move: false
-                };
             }
         }
         tree_5.Calculation_sumChildren = Calculation_sumChildren;
@@ -779,6 +866,12 @@ var ooo;
             setTableData(data) {
                 var _a, _b;
                 this.table_body.innerHTML = "";
+                if (!data) {
+                    data = [{
+                            data: {},
+                            level: 0
+                        }];
+                }
                 this.data = data;
                 for (let itemIndex = 0; itemIndex < data.length; itemIndex++) {
                     let item = data[itemIndex];
@@ -1452,15 +1545,19 @@ var ooo;
                 };
             }
             setData(data) {
-                for (let treeData of data.trees) {
-                    let tree = this.trees.find(v => v.name == treeData.name);
-                    if (tree == undefined) {
-                        continue;
+                var _a;
+                if (this.format) {
+                    for (let formatTree of this.format.trees) {
+                        let tree = this.trees.find(v => v.name == formatTree.name);
+                        if (tree == undefined) {
+                            continue;
+                        }
+                        tree.tree.setTableData((_a = data.trees.find(v => v.name == formatTree.name)) === null || _a === void 0 ? void 0 : _a.data);
                     }
-                    tree.tree.setTableData(treeData.data);
                 }
             }
             setFormat(format) {
+                this.format = format;
                 for (let treeConfig of format.trees) {
                     let tree = this.trees.find(v => v.name == treeConfig.name);
                     if (tree == undefined) {

@@ -34,6 +34,22 @@ declare namespace ooo.tree {
     }
 }
 declare namespace ooo.tree {
+    class Calculation_lookup extends Calculation {
+        calculationConfig: CalculationConfig;
+        private targetTreeName;
+        private targetKey;
+        private targetValue;
+        private referenceTreeName;
+        private referenceKey;
+        private referenceValue;
+        constructor(calculationConfig: CalculationConfig);
+        calculate(trees: Trees, changes: TreeDataChanges): void;
+    }
+    class CalculationCreator_lookup extends CalculationCreator<Calculation_lookup> {
+        create(calculationConfig: CalculationConfig): Calculation_lookup;
+    }
+}
+declare namespace ooo.tree {
     class Calculation_sameToParentRatio extends Calculation {
         calculationConfig: CalculationConfig;
         baseColumnName: string;
@@ -67,13 +83,6 @@ declare namespace ooo.tree {
         treeName: string;
         constructor(calculationConfig: CalculationConfig);
         calculate(trees: Trees, changes: TreeDataChanges): void;
-        getDepends(): string[];
-        getChangeImpact(): {
-            level: boolean;
-            insert: boolean;
-            delete: boolean;
-            move: boolean;
-        };
     }
     class CalculationCreator_sumAttributes extends CalculationCreator<Calculation_sumAttributes> {
         create(calculationConfig: CalculationConfig): Calculation_sumAttributes;
@@ -82,18 +91,10 @@ declare namespace ooo.tree {
 declare namespace ooo.tree {
     class Calculation_sumChildren extends Calculation {
         calculationConfig: CalculationConfig;
-        attributes: string[];
         columnName: string;
         treeName: string;
         constructor(calculationConfig: CalculationConfig);
         calculate(trees: Trees, changes: TreeDataChanges): void;
-        getDepends(): string[];
-        getChangeImpact(): {
-            level: boolean;
-            insert: boolean;
-            delete: boolean;
-            move: boolean;
-        };
     }
     class CalculationCreator_childSum extends CalculationCreator<Calculation_sumChildren> {
         create(calculationConfig: CalculationConfig): Calculation_sumChildren;
@@ -156,7 +157,7 @@ declare namespace ooo.tree {
         constructor(name: string, table: HTMLTableElement, table_header: HTMLTableSectionElement, table_body: HTMLTableSectionElement, calculationManager: CalculationManager);
         setIconPath(path: string): void;
         setColumns(columns: ColumnConfig[]): void;
-        setTableData(data: TreeDataItem[]): void;
+        setTableData(data?: TreeDataItem[]): void;
         getTableData(): TreeDataItem[];
         hasChild(itemIndex: number): boolean;
         getWidth(): number;
@@ -239,6 +240,7 @@ declare namespace ooo.tree {
     class Trees {
         formatName: string;
         private trees;
+        private format?;
         private calculationManager;
         constructor(formatName: string);
         getTree(name: string): TreeDataView | undefined;
@@ -268,10 +270,6 @@ declare namespace ooo.tree {
         arguments: any;
     };
     type FormatConfig = {
-        name: string;
-        tree_col: string;
-        id_col: string;
-        parent_key: string;
         columns: ColumnConfig[];
     };
     type TreeDataItem = {

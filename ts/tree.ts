@@ -55,8 +55,15 @@ namespace ooo.tree {
             this.onAfterSetHeader_selection(columns);
         }
 
-        public setTableData(data: TreeDataItem[]) {
+        public setTableData(data?: TreeDataItem[]) {
             this.table_body.innerHTML = "";
+            if (!data) {
+                data = [{
+                    data: {},
+                    level: 0
+                }];
+            }
+
             this.data = data;
 
             for (let itemIndex = 0; itemIndex < data.length; itemIndex++) {

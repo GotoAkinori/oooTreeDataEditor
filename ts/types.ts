@@ -13,10 +13,6 @@ namespace ooo.tree {
     };
 
     export type FormatConfig = {
-        name: string,
-        tree_col: string,
-        id_col: string,
-        parent_key: string,
         columns: ColumnConfig[]
     };
 

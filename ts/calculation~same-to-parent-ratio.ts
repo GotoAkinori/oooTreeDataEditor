@@ -12,7 +12,7 @@ namespace ooo.tree {
             [this.baseTreeName, this.baseColumnName] = calculationConfig.arguments.base.split(".");
 
             if (this.treeName !== this.baseTreeName) {
-                console.warn(`[OOOTREE][Calculation(same_to_parent_ratio)] Calculation format is unexpected. Tree of target and base should be the same. (target=${calculationConfig.arguments.target_column}, base=${calculationConfig.arguments.base})`);
+                console.warn(`[OOOTREE][Calculation(same_to_parent_ratio)][same_to_parent_ratio] Calculation format is unexpected. Tree of target and base should be the same. (target=${calculationConfig.arguments.target_column}, base=${calculationConfig.arguments.base})`);
             }
         }
 

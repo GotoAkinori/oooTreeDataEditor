@@ -59,17 +59,6 @@ namespace ooo.tree {
                 }
             }
         }
-        public getDepends(): string[] {
-            return this.attributes;
-        }
-        public getChangeImpact(): { level: boolean; insert: boolean; delete: boolean; move: boolean; } {
-            return {
-                level: false,
-                insert: false,
-                delete: false,
-                move: false
-            }
-        }
     }
 
     export class CalculationCreator_sumAttributes extends CalculationCreator<Calculation_sumAttributes> {

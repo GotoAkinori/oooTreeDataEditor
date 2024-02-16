@@ -37,19 +37,53 @@
                     "caption": "same to parent ratio",
                     "readonly": false,
                     "value_type": "number"
+                },
+                {
+                    "name": "lookup_key",
+                    "caption": "Lookup Key",
+                    "readonly": false,
+                    "value_type": "string"
+                },
+                {
+                    "name": "lookup",
+                    "caption": "Lookup",
+                    "readonly": false,
+                    "value_type": "number"
+                }
+            ]
+        },
+        {
+            "name": "reference",
+            "columns": [
+                {
+                    "name": "id",
+                    "caption": "ID"
+                },
+                {
+                    "name": "key",
+                    "caption": "Key"
+                },
+                {
+                    "name": "value",
+                    "caption": "Value"
                 }
             ]
         }
     ],
     "calculations": [
         {
+            "type": "lookup",
+            "arguments": {
+                "target_column": "main.lookup",
+                "lookup_key": "main.lookup_key",
+                "refernce_key": "reference.key",
+                "refernce_value": "reference.value"
+            }
+        },
+        {
             "type": "sum_children",
             "arguments": {
-                "target_column": "main.sum_children",
-                "attributes": [
-                    "main.sum_children",
-                    "main.same_to_parent"
-                ]
+                "target_column": "main.sum_children"
             }
         },
         {

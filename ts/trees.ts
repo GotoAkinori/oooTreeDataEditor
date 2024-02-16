@@ -1,6 +1,7 @@
 namespace ooo.tree {
     export class Trees {
         private trees: { name: string, tree: TreeDataView }[] = [];
+        private format?: TreeFormat;
         private calculationManager: CalculationManager = new CalculationManager(this);
 
         public constructor(public formatName: string) { }
@@ -23,14 +24,18 @@ namespace ooo.tree {
         }
 
         public setData(data: TreeData) {
-            for (let treeData of data.trees) {
-                let tree = this.trees.find(v => v.name == treeData.name);
-                if (tree == undefined) { continue; }
-                tree.tree.setTableData(treeData.data);
+            if (this.format) {
+                for (let formatTree of this.format.trees) {
+                    let tree = this.trees.find(v => v.name == formatTree.name);
+                    if (tree == undefined) { continue; }
+                    tree.tree.setTableData(data.trees.find(v => v.name == formatTree.name)?.data);
+                }
             }
         }
 
         public setFormat(format: TreeFormat) {
+            this.format = format;
+
             for (let treeConfig of format.trees) {
                 let tree = this.trees.find(v => v.name == treeConfig.name);
                 if (tree == undefined) { continue; }

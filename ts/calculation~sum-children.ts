@@ -1,13 +1,11 @@
 namespace ooo.tree {
     export class Calculation_sumChildren extends Calculation {
-        public attributes: string[];
         public columnName: string;
         public treeName: string;
 
         public constructor(public calculationConfig: CalculationConfig) {
             super(calculationConfig);
             [this.treeName, this.columnName] = calculationConfig.arguments.target_column.split(".");
-            this.attributes = calculationConfig.arguments.attributes;
         }
 
         public calculate(trees: Trees, changes: TreeDataChanges): void {
@@ -102,18 +100,6 @@ namespace ooo.tree {
                         }
                     }
                 }
-            }
-        }
-
-        public getDepends(): string[] {
-            return [this.columnName];
-        }
-        public getChangeImpact(): { level: boolean; insert: boolean; delete: boolean; move: boolean; } {
-            return {
-                level: true,
-                insert: false,
-                delete: true,
-                move: false
             }
         }
     }
